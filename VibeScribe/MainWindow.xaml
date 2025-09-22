@@ -17,6 +17,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -25,46 +26,48 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
+        <!-- Верхняя панель: All Recording слева, New Recording справа -->
         <TextBlock Grid.Row="0" Grid.Column="0"
                    Text="All Recording"
-                   VerticalAlignment="Top"
+                   VerticalAlignment="Center"
                    HorizontalAlignment="Left"
-                   Margin="10,10,0,0"/>
+                   Margin="10,10,0,10"/>
 
-        <Button Grid.Row="0" Grid.Column="1"
-                Content="Record"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Margin="0,10,0,0"
-                Click="RecordButton_Click" />
-
-        <Button x:Name="NewRecordingButton" Grid.Row="0" Grid.Column="2" Click="NewRecordingButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0">
+        <Button x:Name="NewRecordingButton" Grid.Row="0" Grid.Column="2" Click="NewRecordingButton_Click" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,10,10,10">
             <StackPanel Orientation="Horizontal">
                 <FontIcon x:Name="RecordingIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xEA3F;" FontSize="12" Margin="0,0,4,0" />
                 <TextBlock x:Name="RecordingTextBlock" Text="New Recording" />
             </StackPanel>
         </Button>
 
+        <!-- Кнопка Record опущена ниже, в центр -->
+        <Button Grid.Row="1" Grid.Column="1"
+                Content="Record"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="0,10,0,10"
+                Click="RecordButton_Click" />
+
         <TextBlock x:Name="StatusTextBlock"
-                   Grid.Row="1"
+                   Grid.Row="2"
                    Grid.ColumnSpan="3"
                    Text="Ready to record"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
-                   Margin="0,10,0,10"
+                   Margin="0,10,0,20"
                    FontSize="14"
                    Foreground="Gray" />
 
         <TextBlock x:Name="TranscriptTextBlock"
-                   Grid.Row="2"
+                   Grid.Row="3"
                    Grid.ColumnSpan="3"
                    Text="Transcript will appear here"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Top"
-                   Margin="10,0,10,10"
+                   Margin="10,10,10,20"
                    FontSize="16"
                    TextWrapping="Wrap"
-                   Foreground="Black" />
+                   Foreground="LightGray" />
 
     </Grid>
 </Window>
