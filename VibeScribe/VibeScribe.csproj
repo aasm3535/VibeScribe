@@ -29,9 +29,6 @@
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views/MainView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -53,9 +50,6 @@
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Update="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Update="Views/MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -71,6 +65,10 @@
     <Compile Update="Views/TranscriptionView.xaml.cs">
       <DependentUpon>TranscriptionView.xaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="MainWindow.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup>
