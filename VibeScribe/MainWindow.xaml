@@ -13,30 +13,58 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <StackPanel Margin="10">
-        <!-- Header -->
-        <TextBlock Text="All Recording"
-                   VerticalAlignment="Center"
-                   Margin="0,0,0,10"
-                   FontSize="18" />
+    <Grid Margin="10">
+        <!-- Header Row -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="All Recordings"
+                       VerticalAlignment="Center"
+                       FontSize="18" />
+            <Button x:Name="NewRecordingButton" Grid.Column="1" Click="NewRecordingButton_Click" Background="Transparent" BorderThickness="0" HorizontalAlignment="Right" Margin="10,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon x:Name="RecordingIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xEA3F;" FontSize="12" Margin="0,0,4,0" />
+                    <TextBlock x:Name="RecordingTextBlock" Text="New Recording" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Grid>
 
-        <!-- Records History -->
-        <TextBlock Text="Records History" Margin="0,0,0,10" FontWeight="Bold" />
-        <ListView x:Name="RecordsListView" Margin="0,0,0,20" ItemClick="RecordsListView_ItemClick" SelectionMode="Single">
-            <!-- Items will be added from code -->
-        </ListView>
+        <!-- Main Content Grid -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="200" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5" />
+            </Grid.ColumnDefinitions>
 
-        <!-- Transcript Viewer -->
-        <TextBox x:Name="TitleTextBox" Text="Recording Title" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" IsReadOnly="True" Background="Transparent" BorderThickness="0" />
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,0,10">
-            <TextBlock x:Name="TranscriptTextBlock" Text="Select a recording to view the transcript" TextWrapping="Wrap" FontSize="14" />
-        </ScrollViewer>
-        <Button x:Name="NewRecordingButton" Click="NewRecordingButton_Click" Background="Transparent" BorderThickness="0" HorizontalAlignment="Center" Margin="0,10,0,0">
-            <StackPanel Orientation="Horizontal">
-                <FontIcon x:Name="RecordingIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xEA3F;" FontSize="12" Margin="0,0,4,0" />
-                <TextBlock x:Name="RecordingTextBlock" Text="New Recording" VerticalAlignment="Center" />
+            <!-- Left Panel: Records History and Title -->
+            <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                <TextBlock Text="Records History" Margin="0,0,0,10" FontWeight="Bold" />
+                <ListView x:Name="RecordsListView" ItemClick="RecordsListView_ItemClick" SelectionMode="Single" Margin="0,0,0,20">
+                    <!-- Items will be added from code -->
+                </ListView>
+                <TextBox x:Name="RecordingTitleTextBlock" Text="Recording Title" FontSize="18" FontWeight="Bold" IsReadOnly="True" Background="Transparent" BorderThickness="0" VerticalAlignment="Top" />
             </StackPanel>
-        </Button>
-        <TextBlock x:Name="StatusTextBlock" Text="Ready to record" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,0" FontSize="12" Foreground="Gray" />
-    </StackPanel>
+
+            <!-- GridSplitter -->
+            <GridSplitter Grid.Column="2" Width="5" Background="LightGray" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+
+            <!-- Right Panel: Transcript -->
+            <StackPanel Grid.Column="1">
+                <TextBlock x:Name="TranscriptTitleTextBlock" Text="Transcript Title" FontSize="16" FontWeight="Bold" Margin="0,0,0,10" />
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,0,10">
+                    <TextBlock x:Name="TranscriptTextBlock" Text="Select a recording to view the transcript." TextWrapping="Wrap" FontSize="14" />
+                </ScrollViewer>
+            </StackPanel>
+        </Grid>
+
+        <!-- Status at bottom -->
+        <TextBlock x:Name="StatusTextBlock" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,10,0,0" FontSize="12" Foreground="Gray" Grid.ColumnSpan="3" />
+    </Grid>
 </Window>

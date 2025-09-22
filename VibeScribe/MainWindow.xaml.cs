@@ -58,7 +58,7 @@ namespace VibeScribe
 
             _ = InitializeMediaCaptureAsync();
 
-            // Загрузка существующих записей в ListView
+            // Load existing records into ListView
             LoadRecords();
         }
 
@@ -97,7 +97,7 @@ namespace VibeScribe
             {
                 // Handle initialization error, e.g., no microphone
                 System.Diagnostics.Debug.WriteLine($"MediaCapture initialization failed: {ex.Message}");
-                SetStatusText("Инициализация микрофона не удалась");
+                SetStatusText("Microphone initialization failed");
             }
         }
 
@@ -113,7 +113,7 @@ namespace VibeScribe
         {
             if (_mediaCapture == null)
             {
-                SetStatusText("Микрофон не инициализирован");
+                SetStatusText("Microphone not initialized");
                 return;
             }
 
@@ -127,12 +127,12 @@ namespace VibeScribe
                     _isRecording = true;
                     // Update UI for recording state
                     RecordingIcon.Glyph = "\uE7C8"; // Recording icon
-                    RecordingTextBlock.Text = "Остановить запись";
-                    SetStatusText("Запись... (нажмите для остановки)");
+                    RecordingTextBlock.Text = "Stop Recording";
+                    SetStatusText("Recording... (click to stop)");
                 }
                 catch (Exception ex)
                 {
-                    SetStatusText($"Не удалось начать запись: {ex.Message}");
+                    SetStatusText($"Failed to start recording: {ex.Message}");
                     System.Diagnostics.Debug.WriteLine($"Start recording failed: {ex.Message}");
                 }
             }
@@ -144,8 +144,8 @@ namespace VibeScribe
                     _isRecording = false;
                     // Update UI for stopped state
                     RecordingIcon.Glyph = "\uEA3F"; // New Recording icon
-                    RecordingTextBlock.Text = "Новый Рекординг";
-                    SetStatusText("Обработка транскрипции...");
+                    RecordingTextBlock.Text = "New Recording";
+                    SetStatusText("Processing transcription...");
 
                     // Copy recording to Temp folder
                     string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
@@ -165,14 +165,14 @@ namespace VibeScribe
                     await SendToServerAsync(audioPath, txtPath);
                     await _recordingFile.DeleteAsync();
 
-                    // Перезагрузить список записей
+                    // Reload records list
                     LoadRecords();
 
-                    SetStatusText($"Сохранено: {audioFileName} и {txtFileName}");
+                    SetStatusText($"Saved: {audioFileName} and {txtFileName}");
                 }
                 catch (Exception ex)
                 {
-                    SetStatusText($"Не удалось остановить запись: {ex.Message}");
+                    SetStatusText($"Failed to stop recording: {ex.Message}");
                     System.Diagnostics.Debug.WriteLine($"Stop recording failed: {ex.Message}");
                 }
             }
@@ -198,26 +198,26 @@ namespace VibeScribe
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
-                    // Предполагаем, что сервер возвращает JSON с полем "text"
+                    // Assume server returns JSON with "text" field
                     using JsonDocument doc = JsonDocument.Parse(jsonResponse);
-                    string transcript = doc.RootElement.GetProperty("text").GetString() ?? "Нет транскрипта";
+                    string transcript = doc.RootElement.GetProperty("text").GetString() ?? "No transcript";
                     File.WriteAllText(txtPath, transcript);
-                    SetStatusText("Транскрипт сохранен в файл");
+                    SetStatusText("Transcript saved to file");
                 }
                 else
                 {
-                    SetStatusText("Транскрипция не удалась: " + response.StatusCode);
-                    File.WriteAllText(txtPath, "Транскрипция не удалась");
+                    SetStatusText("Transcription failed: " + response.StatusCode);
+                    File.WriteAllText(txtPath, "Transcription failed");
                 }
             }
             catch (Exception ex)
             {
-                SetStatusText($"Ошибка отправки на сервер: {ex.Message}");
+                SetStatusText($"Server send error: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Send to server failed: {ex.Message}");
                 // Try to write error to txt
                 try
                 {
-                    File.WriteAllText(txtPath, $"Ошибка: {ex.Message}");
+                    File.WriteAllText(txtPath, $"Error: {ex.Message}");
                 }
                 catch { }
             }
@@ -226,7 +226,7 @@ namespace VibeScribe
         public void RecordButton_Click(object sender, RoutedEventArgs e)
         {
             AppNotification notification = new AppNotificationBuilder()
-                .AddText("Началась запись")
+                .AddText("Recording started")
                 .BuildNotification();
 
             AppNotificationManager.Default.Show(notification);
@@ -243,11 +243,13 @@ namespace VibeScribe
                     if (File.Exists(txtPath))
                     {
                         string transcript = File.ReadAllText(txtPath);
-                        // Найти соответствующий аудио файл для заголовка
+                        // Find corresponding audio file for title
                         string audioFileName = fileName.Replace("transcript_", "recording_");
-                        TitleTextBox.Text = Path.GetFileNameWithoutExtension(audioFileName);
+                        string title = Path.GetFileNameWithoutExtension(audioFileName);
+                        RecordingTitleTextBlock.Text = title;
+                        TranscriptTitleTextBlock.Text = title;
                         TranscriptTextBlock.Text = transcript;
-                        SetStatusText($"Загружено: {fileName}");
+                        SetStatusText($"Loaded: {fileName}");
                     }
                 }
             }
