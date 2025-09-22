@@ -1,0 +1,17 @@
+<Page
+    x:Class="VibeScribe.Views.MainView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Frame x:Name="TranscriptionViewFrame" Grid.Column="0"/>
+        <Rectangle Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Fill="Transparent" />
+        <Frame x:Name="TranscriptionDetailViewFrame" Grid.Column="2"/>
+    </Grid>
+</Page>

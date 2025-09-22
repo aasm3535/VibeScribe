@@ -1,0 +1,10 @@
+<Window
+    x:Class="VibeScribe.Views.PopOutWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Transcription">
+
+    <Grid>
+        <Frame x:Name="PopOutFrame"/>
+    </Grid>
+</Window>

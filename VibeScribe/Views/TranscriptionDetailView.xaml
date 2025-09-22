@@ -1,0 +1,25 @@
+<Page
+    x:Class="VibeScribe.Views.TranscriptionDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewmodels="using:VibeScribe.ViewModels">
+
+    <Page.DataContext>
+        <viewmodels:TranscriptionDetailViewModel/>
+    </Page.DataContext>
+
+    <Grid>
+        <StackPanel>
+            <TextBlock Text="{x:Bind ViewModel.Transcription.Title}" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
+            <RichTextBlock>
+                <Paragraph>
+                    <Run Text="{x:Bind ViewModel.Transcription.Text}"/>
+                </Paragraph>
+            </RichTextBlock>
+            <MediaPlayerElement x:Name="MediaPlayer" AutoPlay="False" AreTransportControlsEnabled="True" Source="{x:Bind ViewModel.Transcription.AudioFilePath}" />
+            <Button Content="Pop Out" Command="{x:Bind ViewModel.PopOutCommand}" Margin="0,10,0,0"/>
+            <Button x:Name="DeleteButton" Content="Delete" Margin="0,10,0,0" Command="{x:Bind ViewModel.ShowDeleteConfirmationCommand}"/>
+            <TeachingTip Target="{x:Bind DeleteButton}" IsOpen="{x:Bind ViewModel.IsDeleteConfirmationOpen, Mode=TwoWay}" Title="Delete Transcription?" Subtitle="This action cannot be undone." ActionButtonContent="Delete" CloseButtonContent="Cancel" ActionButtonCommand="{x:Bind ViewModel.DeleteCommand}"/>
+        </StackPanel>
+    </Grid>
+</Page>

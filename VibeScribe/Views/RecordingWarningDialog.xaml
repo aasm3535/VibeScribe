@@ -1,0 +1,14 @@
+<ContentDialog
+    x:Class="VibeScribe.Views.RecordingWarningDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Start a new recording?"
+    PrimaryButtonText="Start"
+    CloseButtonText="Cancel">
+
+    <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <TextBlock Text="This will start a new audio recording. Make sure your microphone is ready." TextWrapping="Wrap" />
+        <CheckBox Content="Don't show this again."/>
+    </StackPanel>
+
+</ContentDialog>
