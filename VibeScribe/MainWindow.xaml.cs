@@ -39,6 +39,7 @@ namespace VibeScribe
         private StorageFile? _recordingFile;
         private bool _isRecording = false;
         private static readonly HttpClient httpClient = new HttpClient();
+        private string _tempDir;
 
         public MainWindow()
         {
@@ -51,6 +52,9 @@ namespace VibeScribe
             //AppWindow.Move(new Windows.Graphics.PointInt32(50, 50));
 
             AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+
+            _tempDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Vibescribe", "Temp");
+            Directory.CreateDirectory(_tempDir);
 
             _ = InitializeMediaCaptureAsync();
         }
@@ -120,8 +124,26 @@ namespace VibeScribe
                     RecordingIcon.Glyph = "\uEA3F"; // New Recording icon
                     RecordingTextBlock.Text = "New Recording";
                     SetStatusText("Processing transcription...");
-                    await SendToServerAsync(_recordingFile);
+
+                    // Copy recording to Temp folder
+                    string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                    string audioFileName = $"recording_{timestamp}.mp3";
+                    string audioPath = Path.Combine(_tempDir, audioFileName);
+                    string txtFileName = $"transcript_{timestamp}.txt";
+                    string txtPath = Path.Combine(_tempDir, txtFileName);
+
+                    using (var input = File.OpenRead(_recordingFile.Path))
+                    {
+                        using (var output = File.Create(audioPath))
+                        {
+                            input.CopyTo(output);
+                        }
+                    }
+
+                    await SendToServerAsync(audioPath, txtPath);
                     await _recordingFile.DeleteAsync();
+
+                    SetStatusText($"Saved: {audioFileName} and {txtFileName}");
                 }
                 catch (Exception ex)
                 {
@@ -131,22 +153,20 @@ namespace VibeScribe
             }
         }
 
-        private async Task SendToServerAsync(StorageFile recordingFile)
+        private async Task SendToServerAsync(string audioPath, string txtPath)
         {
             try
             {
                 string serverUrl = "http://localhost:5000/transcribe";
                 
-                using var stream = await recordingFile.OpenReadAsync();
-                using var dataReader = new DataReader(stream);
-                await dataReader.LoadAsync((uint)stream.Size);
-                byte[] audioBytes = new byte[stream.Size];
-                dataReader.ReadBytes(audioBytes);
+                using var stream = File.OpenRead(audioPath);
+                byte[] audioBytes = new byte[stream.Length];
+                await stream.ReadAsync(audioBytes, 0, (int)stream.Length);
 
                 using var content = new MultipartFormDataContent();
                 using var byteContent = new ByteArrayContent(audioBytes);
                 byteContent.Headers.ContentType = new MediaTypeHeaderValue("audio/mpeg");
-                content.Add(byteContent, "audio", "recording.mp3");
+                content.Add(byteContent, "audio", Path.GetFileName(audioPath));
 
                 var response = await httpClient.PostAsync(serverUrl, content);
                 
@@ -156,17 +176,25 @@ namespace VibeScribe
                     // Предполагаем, что сервер возвращает JSON с полем "text"
                     using JsonDocument doc = JsonDocument.Parse(jsonResponse);
                     string transcript = doc.RootElement.GetProperty("text").GetString() ?? "No transcript";
-                    SetStatusText($"Transcript: {transcript}");
+                    File.WriteAllText(txtPath, transcript);
+                    SetStatusText($"Transcript saved to file");
                 }
                 else
                 {
                     SetStatusText("Transcription failed: " + response.StatusCode);
+                    File.WriteAllText(txtPath, "Transcription failed");
                 }
             }
             catch (Exception ex)
             {
                 SetStatusText($"Send to server failed: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Send to server failed: {ex.Message}");
+                // Try to write error to txt
+                try
+                {
+                    File.WriteAllText(txtPath, $"Error: {ex.Message}");
+                }
+                catch { }
             }
         }
 
