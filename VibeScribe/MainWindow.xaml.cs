@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Windowing;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -128,6 +128,45 @@ namespace VibeScribe
                     SetStatusText($"Stop recording failed: {ex.Message}");
                     System.Diagnostics.Debug.WriteLine($"Stop recording failed: {ex.Message}");
                 }
+            }
+        }
+
+        private async Task SendToServerAsync(StorageFile recordingFile)
+        {
+            try
+            {
+                string serverUrl = "https://your-server.com/transcribe"; // Замените на реальный URL сервера
+                
+                using var stream = await recordingFile.OpenReadAsync();
+                using var dataReader = new DataReader(stream);
+                await dataReader.LoadAsync((uint)stream.Size);
+                byte[] audioBytes = new byte[stream.Size];
+                dataReader.ReadBytes(audioBytes);
+
+                using var content = new MultipartFormDataContent();
+                using var byteContent = new ByteArrayContent(audioBytes);
+                byteContent.Headers.ContentType = new MediaTypeHeaderValue("audio/mpeg");
+                content.Add(byteContent, "audio", "recording.mp3");
+
+                var response = await httpClient.PostAsync(serverUrl, content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    // Предполагаем, что сервер возвращает JSON с полем "transcript"
+                    using JsonDocument doc = JsonDocument.Parse(jsonResponse);
+                    string transcript = doc.RootElement.GetProperty("transcript").GetString() ?? "No transcript";
+                    SetStatusText($"Transcript: {transcript}");
+                }
+                else
+                {
+                    SetStatusText("Transcription failed: " + response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                SetStatusText($"Send to server failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Send to server failed: {ex.Message}");
             }
         }
 
