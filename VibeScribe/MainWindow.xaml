@@ -14,32 +14,44 @@
     </Window.SystemBackdrop>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <TextBlock
-        Grid.Column="0"
+        <TextBlock Grid.Row="0" Grid.Column="0"
         Text="All Recording"
         VerticalAlignment="Top"
         HorizontalAlignment="Left"
         Margin="10,10,0,0"/>
 
-        <Button
-        Grid.Column="1"
+        <Button Grid.Row="0" Grid.Column="1"
         Content="Record"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
         Click="RecordButton_Click" />
 
-        <Button Grid.Column="2" Click="NewRecordingButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0">
+        <Button x:Name="NewRecordingButton" Grid.Row="0" Grid.Column="2" Click="NewRecordingButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0">
             <StackPanel Orientation="Horizontal">
-                <SymbolIcon Symbol="Add" />
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE710;" FontSize="12" Margin="0,0,4,0" />
                 <TextBlock Text="New Recording" />
             </StackPanel>
         </Button>
+
+        <TextBlock x:Name="StatusTextBlock"
+                   Grid.Row="1"
+                   Grid.ColumnSpan="3"
+                   Text=""
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,0,0,10"
+                   FontSize="14"
+                   Foreground="Gray" />
 
     </Grid>
 </Window>
