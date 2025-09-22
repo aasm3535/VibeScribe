@@ -100,7 +100,7 @@ namespace VibeScribe
                     await _mediaCapture.StartRecordToStorageFileAsync(encodingProfile, _recordingFile);
                     _isRecording = true;
                     // Update UI for recording state
-                    RecordingIcon.Glyph = "\uE74C"; // Stop icon
+                    RecordingIcon.Glyph = "\uE7C8"; // Recording icon
                     RecordingTextBlock.Text = "Stop Recording";
                     SetStatusText("Recording... (tap to stop)");
                 }
@@ -117,7 +117,7 @@ namespace VibeScribe
                     await _mediaCapture.StopRecordAsync();
                     _isRecording = false;
                     // Update UI for stopped state
-                    RecordingIcon.Glyph = "\uE710"; // New Recording icon (plus)
+                    RecordingIcon.Glyph = "\uEA3F"; // New Recording icon
                     RecordingTextBlock.Text = "New Recording";
                     SetStatusText("Processing transcription...");
                     await SendToServerAsync(_recordingFile);
