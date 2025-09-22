@@ -15,8 +15,9 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -25,16 +26,17 @@
         </Grid.ColumnDefinitions>
 
         <TextBlock Grid.Row="0" Grid.Column="0"
-        Text="All Recording"
-        VerticalAlignment="Top"
-        HorizontalAlignment="Left"
-        Margin="10,10,0,0"/>
+                   Text="All Recording"
+                   VerticalAlignment="Top"
+                   HorizontalAlignment="Left"
+                   Margin="10,10,0,0"/>
 
         <Button Grid.Row="0" Grid.Column="1"
-        Content="Record"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Click="RecordButton_Click" />
+                Content="Record"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,10,0,0"
+                Click="RecordButton_Click" />
 
         <Button x:Name="NewRecordingButton" Grid.Row="0" Grid.Column="2" Click="NewRecordingButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0">
             <StackPanel Orientation="Horizontal">
@@ -46,12 +48,23 @@
         <TextBlock x:Name="StatusTextBlock"
                    Grid.Row="1"
                    Grid.ColumnSpan="3"
-                   Text=""
+                   Text="Ready to record"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
-                   Margin="0,0,0,10"
+                   Margin="0,10,0,10"
                    FontSize="14"
                    Foreground="Gray" />
+
+        <TextBlock x:Name="TranscriptTextBlock"
+                   Grid.Row="2"
+                   Grid.ColumnSpan="3"
+                   Text="Transcript will appear here"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top"
+                   Margin="10,0,10,10"
+                   FontSize="16"
+                   TextWrapping="Wrap"
+                   Foreground="Black" />
 
     </Grid>
 </Window>

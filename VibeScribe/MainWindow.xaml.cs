@@ -135,7 +135,7 @@ namespace VibeScribe
         {
             try
             {
-                string serverUrl = "https://your-server.com/transcribe"; // Замените на реальный URL сервера
+                string serverUrl = "http://localhost:5000/transcribe";
                 
                 using var stream = await recordingFile.OpenReadAsync();
                 using var dataReader = new DataReader(stream);
@@ -153,9 +153,9 @@ namespace VibeScribe
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
-                    // Предполагаем, что сервер возвращает JSON с полем "transcript"
+                    // Предполагаем, что сервер возвращает JSON с полем "text"
                     using JsonDocument doc = JsonDocument.Parse(jsonResponse);
-                    string transcript = doc.RootElement.GetProperty("transcript").GetString() ?? "No transcript";
+                    string transcript = doc.RootElement.GetProperty("text").GetString() ?? "No transcript";
                     SetStatusText($"Transcript: {transcript}");
                 }
                 else
