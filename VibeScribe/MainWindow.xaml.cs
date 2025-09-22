@@ -35,6 +35,12 @@ namespace VibeScribe
     public sealed partial class MainWindow : Window
     {
         private Grid? _rootGrid;
+        private Grid? _contentGrid;
+        private ColumnDefinition? _leftColumn;
+        private Rectangle? _columnSplitter;
+        private bool _isDragging = false;
+        private double _startX;
+        private const double MinLeftWidth = 200;
         private MediaCapture? _mediaCapture;
         private StorageFile? _recordingFile;
         private bool _isRecording = false;
@@ -46,6 +52,21 @@ namespace VibeScribe
             InitializeComponent();
 
             _rootGrid = Content as Grid;
+            if (_rootGrid != null)
+            {
+                _contentGrid = _rootGrid.FindName("MainContentGrid") as Grid;
+                if (_contentGrid != null)
+                {
+                    _leftColumn = _contentGrid.ColumnDefinitions[0];
+                    _columnSplitter = _contentGrid.FindName("ColumnSplitter") as Rectangle;
+
+                    // Set initial width if needed
+                    if (_leftColumn != null)
+                    {
+                        _leftColumn.Width = new GridLength(300);
+                    }
+                }
+            }
 
             AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 500));
 
@@ -53,7 +74,7 @@ namespace VibeScribe
 
             AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
 
-            _tempDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Vibescribe", "Temp");
+            _tempDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VibeScribe", "Temp");
             Directory.CreateDirectory(_tempDir);
 
             _ = InitializeMediaCaptureAsync();
@@ -103,9 +124,9 @@ namespace VibeScribe
 
         private void SetStatusText(string text)
         {
-            if (_rootGrid?.FindName("StatusTextBlock") is TextBlock tb)
+            if (StatusTextBlock != null)
             {
-                tb.Text = text;
+                StatusTextBlock.Text = text;
             }
         }
 
@@ -126,8 +147,8 @@ namespace VibeScribe
                     await _mediaCapture.StartRecordToStorageFileAsync(encodingProfile, _recordingFile);
                     _isRecording = true;
                     // Update UI for recording state
-                    RecordingIcon.Glyph = "\uE7C8"; // Recording icon
-                    RecordingTextBlock.Text = "Stop Recording";
+                    if (RecordingIcon != null) RecordingIcon.Glyph = "\\uE7C8"; // Recording icon
+                    if (RecordingTextBlock != null) RecordingTextBlock.Text = "Stop Recording";
                     SetStatusText("Recording... (click to stop)");
                 }
                 catch (Exception ex)
@@ -143,32 +164,35 @@ namespace VibeScribe
                     await _mediaCapture.StopRecordAsync();
                     _isRecording = false;
                     // Update UI for stopped state
-                    RecordingIcon.Glyph = "\uEA3F"; // New Recording icon
-                    RecordingTextBlock.Text = "New Recording";
+                    if (RecordingIcon != null) RecordingIcon.Glyph = "\\uEA3F"; // New Recording icon
+                    if (RecordingTextBlock != null) RecordingTextBlock.Text = "New Recording";
                     SetStatusText("Processing transcription...");
 
                     // Copy recording to Temp folder
                     string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-                    string audioFileName = $"recording_{timestamp}.mp3";
+                    string audioFileName = $"recording_{{timestamp}}.mp3";
                     string audioPath = Path.Combine(_tempDir, audioFileName);
-                    string txtFileName = $"transcript_{timestamp}.txt";
+                    string txtFileName = $"transcript_{{timestamp}}.txt";
                     string txtPath = Path.Combine(_tempDir, txtFileName);
 
-                    using (var input = File.OpenRead(_recordingFile.Path))
+                    if (_recordingFile != null)
                     {
-                        using (var output = File.Create(audioPath))
+                        using (var input = File.OpenRead(_recordingFile.Path))
                         {
-                            input.CopyTo(output);
+                            using (var output = File.Create(audioPath))
+                            {
+                                input.CopyTo(output);
+                            }
                         }
-                    }
 
-                    await SendToServerAsync(audioPath, txtPath);
-                    await _recordingFile.DeleteAsync();
+                        await SendToServerAsync(audioPath, txtPath);
+                        await _recordingFile.DeleteAsync();
+                    }
 
                     // Reload records list
                     LoadRecords();
 
-                    SetStatusText($"Saved: {audioFileName} and {txtFileName}");
+                    SetStatusText($"Saved: {{audioFileName}} and {{txtFileName}}");
                 }
                 catch (Exception ex)
                 {
@@ -246,12 +270,73 @@ namespace VibeScribe
                         // Find corresponding audio file for title
                         string audioFileName = fileName.Replace("transcript_", "recording_");
                         string title = Path.GetFileNameWithoutExtension(audioFileName);
-                        RecordingTitleTextBlock.Text = title;
-                        TranscriptTitleTextBlock.Text = title;
-                        TranscriptTextBlock.Text = transcript;
+                        if (RecordingTitleTextBlock != null)
+                        {
+                            RecordingTitleTextBlock.Text = title;
+                        }
+                        if (TranscriptTitleTextBlock != null)
+                        {
+                            TranscriptTitleTextBlock.Text = title;
+                        }
+                        if (TranscriptTextBlock != null)
+                        {
+                            TranscriptTextBlock.Text = transcript;
+                        }
                         SetStatusText($"Loaded: {fileName}");
                     }
                 }
+            }
+        }
+
+        // Splitter Event Handlers
+        private void ColumnSplitter_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            // Optional: Change cursor to resize horizontal
+            // Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.SizeWestEast, 0);
+        }
+
+        private void ColumnSplitter_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            // Optional: Reset cursor
+            // Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 0);
+        }
+
+        private void ColumnSplitter_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (_columnSplitter != null && _contentGrid != null)
+            {
+                _columnSplitter.CapturePointer(e.Pointer);
+                _startX = e.GetCurrentPoint(_contentGrid).Position.X;
+                _isDragging = true;
+                e.Handled = true;
+            }
+        }
+
+        private void ColumnSplitter_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (_isDragging && _leftColumn != null && _contentGrid != null)
+            {
+                var currentPoint = e.GetCurrentPoint(_contentGrid);
+                double deltaX = currentPoint.Position.X - _startX;
+                double currentWidth = _leftColumn.ActualWidth;
+                double newWidth = currentWidth + deltaX;
+                newWidth = Math.Max(MinLeftWidth, newWidth);
+                // Optional: Max width to leave space for right panel
+                double maxWidth = _contentGrid.ActualWidth - 205; // splitter 5 + min right 200
+                newWidth = Math.Min(newWidth, maxWidth);
+                _leftColumn.Width = new GridLength(newWidth);
+                _startX = currentPoint.Position.X;
+                e.Handled = true;
+            }
+        }
+
+        private void ColumnSplitter_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_columnSplitter != null && _isDragging)
+            {
+                _columnSplitter.ReleasePointerCapture(e.Pointer);
+                _isDragging = false;
+                e.Handled = true;
             }
         }
     }
