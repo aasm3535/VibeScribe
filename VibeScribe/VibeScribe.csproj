@@ -68,10 +68,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="MainWindow.xaml.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
