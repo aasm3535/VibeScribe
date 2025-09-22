@@ -38,8 +38,8 @@
 
         <Button x:Name="NewRecordingButton" Grid.Row="0" Grid.Column="2" Click="NewRecordingButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,10,10,0">
             <StackPanel Orientation="Horizontal">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE710;" FontSize="12" Margin="0,0,4,0" />
-                <TextBlock Text="New Recording" />
+                <FontIcon x:Name="RecordingIcon" FontFamily="Segoe MDL2 Assets" Glyph="&#xE710;" FontSize="12" Margin="0,0,4,0" />
+                <TextBlock x:Name="RecordingTextBlock" Text="New Recording" />
             </StackPanel>
         </Button>
 

@@ -83,55 +83,6 @@ namespace VibeScribe
             }
         }
 
-        private void UpdateButtonText(string text)
-        {
-            if (_rootGrid?.FindName("NewRecordingButton") is Button button && button.Content is StackPanel stackPanel && stackPanel.Children[1] is TextBlock textBlock)
-            {
-                textBlock.Text = text;
-            }
-        }
-
-        private async Task SendToServerAsync(StorageFile audioFile)
-        {
-            try
-            {
-                using var content = new MultipartFormDataContent();
-                using var fileContent = new StreamContent(await audioFile.OpenStreamForReadAsync());
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue("audio/mp3");
-                content.Add(fileContent, "audio", audioFile.Name);
-
-                var response = await httpClient.PostAsync("http://localhost:5000/transcribe", content);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"Server error: {response.StatusCode} - {errorContent}");
-                    SetStatusText($"Server error: {response.StatusCode} - {errorContent}");
-                    return;
-                }
-                response.EnsureSuccessStatusCode();
-
-                var jsonString = await response.Content.ReadAsStringAsync();
-                using var document = JsonDocument.Parse(jsonString);
-                var text = document.RootElement.GetProperty("text").GetString() ?? "No transcription";
-
-                SetStatusText($"Transcription: {text}");
-            }
-            catch (Exception ex)
-            {
-                SetStatusText($"Server error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Send to server failed: {ex.Message}");
-            }
-        }
-
-        public void RecordButton_Click(object sender, RoutedEventArgs e)
-        {
-            AppNotification notification = new AppNotificationBuilder()
-                .AddText("Началась запись")
-                .BuildNotification();
-
-            AppNotificationManager.Default.Show(notification);
-        }
-
         private async void NewRecordingButton_Click(object sender, RoutedEventArgs e)
         {
             if (_mediaCapture == null)
@@ -148,7 +99,9 @@ namespace VibeScribe
                     var encodingProfile = MediaEncodingProfile.CreateMp3(AudioEncodingQuality.High);
                     await _mediaCapture.StartRecordToStorageFileAsync(encodingProfile, _recordingFile);
                     _isRecording = true;
-                    UpdateButtonText("Stop Recording");
+                    // Update UI for recording state
+                    RecordingIcon.Glyph = "\uE74C"; // Stop icon
+                    RecordingTextBlock.Text = "Stop Recording";
                     SetStatusText("Recording... (tap to stop)");
                 }
                 catch (Exception ex)
@@ -163,7 +116,9 @@ namespace VibeScribe
                 {
                     await _mediaCapture.StopRecordAsync();
                     _isRecording = false;
-                    UpdateButtonText("New Recording");
+                    // Update UI for stopped state
+                    RecordingIcon.Glyph = "\uE710"; // New Recording icon (plus)
+                    RecordingTextBlock.Text = "New Recording";
                     SetStatusText("Processing transcription...");
                     await SendToServerAsync(_recordingFile);
                     await _recordingFile.DeleteAsync();
@@ -174,6 +129,15 @@ namespace VibeScribe
                     System.Diagnostics.Debug.WriteLine($"Stop recording failed: {ex.Message}");
                 }
             }
+        }
+
+        public void RecordButton_Click(object sender, RoutedEventArgs e)
+        {
+            AppNotification notification = new AppNotificationBuilder()
+                .AddText("Началась запись")
+                .BuildNotification();
+
+            AppNotificationManager.Default.Show(notification);
         }
     }
 }
