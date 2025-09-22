@@ -206,5 +206,26 @@ namespace VibeScribe
 
             AppNotificationManager.Default.Show(notification);
         }
+
+        private void RecordsListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is ListViewItem item && item.Content is TextBlock textBlock)
+            {
+                string fileName = textBlock.Text;
+                if (fileName.StartsWith("transcript_"))
+                {
+                    string txtPath = Path.Combine(_tempDir, fileName);
+                    if (File.Exists(txtPath))
+                    {
+                        string transcript = File.ReadAllText(txtPath);
+                        // Найти соответствующий аудио файл для заголовка
+                        string audioFileName = fileName.Replace("transcript_", "recording_");
+                        TitleTextBox.Text = Path.GetFileNameWithoutExtension(audioFileName);
+                        TranscriptTextBlock.Text = transcript;
+                        SetStatusText($"Loaded: {fileName}");
+                    }
+                }
+            }
+        }
     }
 }
