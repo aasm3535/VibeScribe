@@ -57,6 +57,28 @@ namespace VibeScribe
             Directory.CreateDirectory(_tempDir);
 
             _ = InitializeMediaCaptureAsync();
+
+            // Загрузка существующих записей в ListView
+            LoadRecords();
+        }
+
+        private void LoadRecords()
+        {
+            if (RecordsListView == null) return;
+
+            RecordsListView.Items.Clear();
+
+            string[] transcriptFiles = Directory.GetFiles(_tempDir, "transcript_*.txt");
+            foreach (string filePath in transcriptFiles)
+            {
+                string fileName = Path.GetFileName(filePath);
+                var item = new ListViewItem
+                {
+                    Content = new TextBlock { Text = fileName },
+                    Margin = new Microsoft.UI.Xaml.Thickness(5)
+                };
+                RecordsListView.Items.Add(item);
+            }
         }
 
         private async Task InitializeMediaCaptureAsync()
@@ -75,7 +97,7 @@ namespace VibeScribe
             {
                 // Handle initialization error, e.g., no microphone
                 System.Diagnostics.Debug.WriteLine($"MediaCapture initialization failed: {ex.Message}");
-                SetStatusText("Microphone initialization failed");
+                SetStatusText("Инициализация микрофона не удалась");
             }
         }
 
@@ -91,7 +113,7 @@ namespace VibeScribe
         {
             if (_mediaCapture == null)
             {
-                SetStatusText("Microphone not initialized");
+                SetStatusText("Микрофон не инициализирован");
                 return;
             }
 
@@ -105,12 +127,12 @@ namespace VibeScribe
                     _isRecording = true;
                     // Update UI for recording state
                     RecordingIcon.Glyph = "\uE7C8"; // Recording icon
-                    RecordingTextBlock.Text = "Stop Recording";
-                    SetStatusText("Recording... (tap to stop)");
+                    RecordingTextBlock.Text = "Остановить запись";
+                    SetStatusText("Запись... (нажмите для остановки)");
                 }
                 catch (Exception ex)
                 {
-                    SetStatusText($"Start recording failed: {ex.Message}");
+                    SetStatusText($"Не удалось начать запись: {ex.Message}");
                     System.Diagnostics.Debug.WriteLine($"Start recording failed: {ex.Message}");
                 }
             }
@@ -122,8 +144,8 @@ namespace VibeScribe
                     _isRecording = false;
                     // Update UI for stopped state
                     RecordingIcon.Glyph = "\uEA3F"; // New Recording icon
-                    RecordingTextBlock.Text = "New Recording";
-                    SetStatusText("Processing transcription...");
+                    RecordingTextBlock.Text = "Новый Рекординг";
+                    SetStatusText("Обработка транскрипции...");
 
                     // Copy recording to Temp folder
                     string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
@@ -143,11 +165,14 @@ namespace VibeScribe
                     await SendToServerAsync(audioPath, txtPath);
                     await _recordingFile.DeleteAsync();
 
-                    SetStatusText($"Saved: {audioFileName} and {txtFileName}");
+                    // Перезагрузить список записей
+                    LoadRecords();
+
+                    SetStatusText($"Сохранено: {audioFileName} и {txtFileName}");
                 }
                 catch (Exception ex)
                 {
-                    SetStatusText($"Stop recording failed: {ex.Message}");
+                    SetStatusText($"Не удалось остановить запись: {ex.Message}");
                     System.Diagnostics.Debug.WriteLine($"Stop recording failed: {ex.Message}");
                 }
             }
@@ -175,24 +200,24 @@ namespace VibeScribe
                     string jsonResponse = await response.Content.ReadAsStringAsync();
                     // Предполагаем, что сервер возвращает JSON с полем "text"
                     using JsonDocument doc = JsonDocument.Parse(jsonResponse);
-                    string transcript = doc.RootElement.GetProperty("text").GetString() ?? "No transcript";
+                    string transcript = doc.RootElement.GetProperty("text").GetString() ?? "Нет транскрипта";
                     File.WriteAllText(txtPath, transcript);
-                    SetStatusText($"Transcript saved to file");
+                    SetStatusText("Транскрипт сохранен в файл");
                 }
                 else
                 {
-                    SetStatusText("Transcription failed: " + response.StatusCode);
-                    File.WriteAllText(txtPath, "Transcription failed");
+                    SetStatusText("Транскрипция не удалась: " + response.StatusCode);
+                    File.WriteAllText(txtPath, "Транскрипция не удалась");
                 }
             }
             catch (Exception ex)
             {
-                SetStatusText($"Send to server failed: {ex.Message}");
+                SetStatusText($"Ошибка отправки на сервер: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Send to server failed: {ex.Message}");
                 // Try to write error to txt
                 try
                 {
-                    File.WriteAllText(txtPath, $"Error: {ex.Message}");
+                    File.WriteAllText(txtPath, $"Ошибка: {ex.Message}");
                 }
                 catch { }
             }
@@ -222,7 +247,7 @@ namespace VibeScribe
                         string audioFileName = fileName.Replace("transcript_", "recording_");
                         TitleTextBox.Text = Path.GetFileNameWithoutExtension(audioFileName);
                         TranscriptTextBlock.Text = transcript;
-                        SetStatusText($"Loaded: {fileName}");
+                        SetStatusText($"Загружено: {fileName}");
                     }
                 }
             }
